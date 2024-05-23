@@ -1,8 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const getItems = () => {
+  const items = localStorage.getItem("tasks");
+  if (items) {
+    return JSON.parse(items);
+  } else {
+    return [];
+  }
+};
 
 const TodoForm = () => {
   const [task, setTask] = useState("");
-  const [submitTasks, setSubmitTasks] = useState([]);
+  const [submitTasks, setSubmitTasks] = useState(getItems);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editTaskId, setEditTaskId] = useState(null);
@@ -36,6 +45,10 @@ const TodoForm = () => {
     const updatedTasks = submitTasks.filter((task) => task.id !== id);
     setSubmitTasks(updatedTasks);
   };
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(submitTasks));
+  }, [submitTasks]);
 
   return (
     <div style={{ marginTop: "2rem" }}>
