@@ -2,20 +2,41 @@ import { useState } from "react";
 
 const TodoForm = () => {
   const [task, setTask] = useState("");
-  const [submitTask, setSubmitTask] = useState([]);
+  const [submitTasks, setSubmitTasks] = useState([]);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTaskId, setEditTaskId] = useState(null);
 
   const handleTaskSubmit = (e) => {
     e.preventDefault();
-    setSubmitTask([...submitTask, task]);
-    setTask("");
+    if (task.trim()) {
+      if (isEditing) {
+        const updatedTasks = submitTasks.map((t) =>
+          t.id === editTaskId ? { ...t, text: task } : t
+        );
+        setSubmitTasks(updatedTasks);
+        setIsEditing(false);
+        setEditTaskId(null);
+      } else {
+        const newTask = { id: Date.now(), text: task };
+        setSubmitTasks([...submitTasks, newTask]);
+      }
+      setTask("");
+    }
   };
 
-  const handleEdit = (task) => {};
-
-  const handleDelete = (todo) => {
-    const updatedTasks = submitTask.filter((task) => task !== todo);
-    setSubmitTask(updatedTasks);
+  const handleEdit = (id) => {
+    const taskToEdit = submitTasks.find((t) => t.id === id);
+    setTask(taskToEdit.text);
+    setIsEditing(true);
+    setEditTaskId(id);
   };
+
+  const handleDelete = (id) => {
+    const updatedTasks = submitTasks.filter((task) => task.id !== id);
+    setSubmitTasks(updatedTasks);
+  };
+
   return (
     <div style={{ marginTop: "2rem" }}>
       <form
@@ -31,37 +52,31 @@ const TodoForm = () => {
           type="submit"
           style={{ whiteSpace: "nowrap", padding: "0.5rem" }}
         >
-          Add Task
+          {isEditing ? "Update Task" : "Add Task"}
         </button>
       </form>
       <ul>
-        {submitTask &&
-          submitTask.length > 0 &&
-          submitTask.map((task, index) => {
-            return (
-              <div
-                key={index}
-                style={{ whiteSpace: "nowrap", display: "flex", gap: "0.5rem" }}
-              >
-                <input type="checkbox" />
-                <li>
-                  {task}
-                  <p
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleEdit(task)}
-                  >
-                    Edit
-                  </p>
-                  <p
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleDelete(task)}
-                  >
-                    Delete
-                  </p>
-                </li>
-              </div>
-            );
-          })}
+        {submitTasks.length > 0 &&
+          submitTasks.map(({ id, text }) => (
+            <div
+              key={id}
+              style={{ whiteSpace: "nowrap", display: "flex", gap: "0.5rem" }}
+            >
+              <input type="checkbox" />
+              <li>
+                {text}
+                <p style={{ cursor: "pointer" }} onClick={() => handleEdit(id)}>
+                  Edit
+                </p>
+                <p
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleDelete(id)}
+                >
+                  Delete
+                </p>
+              </li>
+            </div>
+          ))}
       </ul>
     </div>
   );
